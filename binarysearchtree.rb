@@ -1,17 +1,5 @@
 require 'pry'
 
-class Node
-
-    attr_accessor :data, :left, :right
-
-    def initialize
-        @data
-        @left = nil #this is the left node that it's pointing to
-        @right = nil #this is the right node that it's pointing to
-    end
-
-end
-
 class Tree
 
     attr_accessor :array, :sorted_array, :root
@@ -41,7 +29,7 @@ class Tree
     
     end
 
-    def insert(value, root) # takes in a value and root of a binary search tree and binary tree will be updated with the new value as a leaf node
+    def insert(value, root = @root) # takes in a value and root of a binary search tree and binary tree will be updated with the new value as a leaf node
 
         new_node = Node.new()
         new_node.data = value
@@ -62,7 +50,7 @@ class Tree
         
     end
 
-    def delete(value, root) # your inputs are a value and the binary tree and the output is the updated binary tree with the deleted node
+    def delete(value, root = @root) # your inputs are a value and the binary tree and the output is the updated binary tree with the deleted node
 
         # finds the inorder successor (basically the minimum value in the node)
         def minValue(node)
@@ -100,7 +88,7 @@ class Tree
 
     end
 
-    def find(value, root)
+    def find(value, root = @root)
         
         return nil if root.data.nil? 
 
@@ -114,7 +102,7 @@ class Tree
 
     end
 
-    def level_order(root)
+    def level_order(root = @root)
 
         node_values = [] #the list of values in level first traversal
         queue = []
@@ -132,17 +120,12 @@ class Tree
         return node_values
     end
 
-    def inorder(root, arr = [])
+    def inorder(root = @root, arr = [])
         
         return arr if root.nil?
 
-        # question here may be - why do we return arr when root is nil? 
-        # the answer is we need to return something when we reach a nil node and it has to be arr because in a way, the arr travels along the entire tree
-        # the arr has data pushed into it when we're traversing the tree and so when there's nothing to push, we return arr so it can go up a level with the
-        # data that it has recorded 
-
-        # why can't I return [] if root.nil? 
-        # well it's because if you do that
+        # THIS CODE ONLY WORKS BECAUSE OF RUBY'S IMPLICIT RETURN FUNCTIONALITY
+        # the better way to do this would be to do it explicitly with CONCAT 
 
         inorder(root.left, arr)
         arr << root.data
@@ -150,6 +133,97 @@ class Tree
 
     end
 
+    def inorder2(current_node = root)
+        
+        #This is the better way to do it because it has an explicit return
+        
+        return [] if current_node.nil?
+  
+        result = []
+  
+        result.concat(inorder(current_node.left)) unless current_node.left.nil?
+        result << current_node.data
+        result.concat(inorder(current_node.right)) unless current_node.right.nil?
+  
+        result
+      end
+
+    def preorder(root = @root, arr=[])
+
+        return arr if root.nil?
+
+        # THIS CODE ONLY WORKS BECAUSE OF RUBY'S IMPLICIT RETURN FUNCTIONALITY
+        # the better way to do this would be to do it explicitly with CONCAT 
+        arr << root.data
+        inorder(root.left, arr)
+        inorder(root.right, arr)
+    end 
+
+    def postorder(root = @root, arr=[])
+
+        return arr if root.nil?
+
+        # THIS CODE ONLY WORKS BECAUSE OF RUBY'S IMPLICIT RETURN FUNCTIONALITY
+        # the better way to do this would be to do it explicitly with CONCAT 
+        inorder(root.left, arr)
+        inorder(root.right, arr)
+        arr << root.data
+    end 
+
+    def height(root = @root)        
+
+        return 0 if root.nil?
+
+        h = 1 # if the root is not nil, then the height is 1 for the node
+
+        # tests the height of the left subtree and the right subtree
+        a = height(root.left)
+        b = height(root.right)
+        # returns the max height of the left subtree and the right subtree
+        max = a > b ? a : b
+
+        h += max # adds the max height of the left / right subtree to the height of the parent
+
+        return h
+
+    end
+
+    def depth(node, tree = @root) #accepts a node and returns its depth
+
+        # traverse tree to find node
+        
+        return nil if tree.nil?
+
+        d = 1 # depth is at least equal to 1
+
+        if tree.data == node.data
+            return d
+        elsif node.data > tree.data
+            d += depth(node, tree.right)
+        elsif node.data < tree.data
+            d += depth(node, tree.left)
+        end
+
+        d
+
+    end
+
+    def balanced?(root = @root)
+
+        return true if root.nil?
+
+        current_node_balanced = (height(root.left) - height(root.right)).abs < 2
+
+        return current_node_balanced && balanced?(root.left) && balanced?(root.right)
+
+    end
+
+    def rebalance(root = @root)
+
+        arr = inorder(root)
+        @root = build_tree(arr)
+
+    end
 
     def pretty_print(node = root, prefix="", is_left = true)
         pretty_print(node.right, "#{prefix}#{is_left ? "│ " : " "}", false) if node.right
@@ -159,15 +233,3 @@ class Tree
 
 end
 
-
-
-# binary_tree = Tree.new([1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324])
-binary_tree = Tree.new([1, 5, 10, 15, 16, 25])
-binary_tree.pretty_print
-binary_tree.insert(35, binary_tree.root)
-binary_tree.pretty_print
-binary_tree.delete(35, binary_tree.root)
-binary_tree.pretty_print
-binary_tree.find(5, binary_tree.root)
-p binary_tree.level_order(binary_tree.root)
-p binary_tree.inorder(binary_tree.root)
